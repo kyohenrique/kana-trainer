@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none" shape-rendering="crispEdges">
+  <style>
+    .steam-rise {
+      opacity: 0;
+      animation: coffee-steam-rise 3s linear infinite;
+      animation-delay: var(--steam-delay, 0s);
+    }
+
+    .steam-wisp {
+      fill: #e9dfd3;
+      transform-box: fill-box;
+      transform-origin: center bottom;
+      animation: coffee-steam-drift 3s ease-in-out infinite;
+      animation-delay: var(--steam-delay, 0s);
+    }
+
+    /* Four phases: emergence, ascent, dispersal and dissipation.
+       Vertical travel is linear and always upward. Both ends are invisible,
+       so the reset to the coffee surface cannot appear as downward motion. */
+    @keyframes coffee-steam-rise {
+      0% { opacity: 0; transform: translateY(0); }
+      30% { opacity: 0.55; transform: translateY(-6.6px); }
+      65% { opacity: 0.28; transform: translateY(-14.3px); }
+      100% { opacity: 0; transform: translateY(-22px); }
+    }
+
+    @keyframes coffee-steam-drift {
+      0% { transform: translateX(0) scaleX(1); }
+      30% { transform: translateX(1px) scaleX(0.95); }
+      65% { transform: translateX(-1px) scaleX(0.65); }
+      100% { transform: translateX(0) scaleX(0.35); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .steam-rise {
+        animation: none;
+        opacity: 0.38;
+        transform: translateY(-6px);
+      }
+      .steam-wisp { animation: none; transform: none; }
+      .steam-second .steam-rise { transform: translateY(-10px); }
+    }
+  </style>
+
+  <!-- Only these two wisps animate. Fixed groups position their origins. -->
+  <g transform="translate(24 22)">
+    <g class="steam-rise">
+      <path class="steam-wisp" d="M0 0h2v4H0v4h2v4H0V8h-2V4h2Z" />
+    </g>
+  </g>
+  <g class="steam-second" transform="translate(36 22)" style="--steam-delay: -1.5s">
+    <g class="steam-rise">
+      <path class="steam-wisp" d="M0 0h2v4H0v4h2v4H0V8h-2V4h2Z" />
+    </g>
+  </g>
+
+  <!-- The saucer and cup are separate, entirely static pixel shapes. -->
+  <g id="saucer">
+    <path fill="#785b47" d="M8 52h44v2h4v4h-4v2H8v-2H4v-4h4Z" />
+    <path fill="#c5a27d" d="M8 52h44v2h4v2H4v-2h4Z" />
+    <path fill="#e9dfd3" d="M10 52h40v2H10Z" />
+    <path fill="#a08468" d="M16 56h28v2H16Z" />
+  </g>
+  <g id="cup">
+    <!-- The open handle keeps the background transparent. -->
+    <path fill="#876b55" fill-rule="evenodd" d="M44 32h10v2h4v10h-2v4H44Zm4 6v6h4v-2h2v-4Z" />
+    <path fill="#d6bfa1" d="M46 34h8v2h2v6h-2v-4h-8Zm4 10h4v2h-8v-2Z" />
+    <path fill="#876b55" d="M12 30h32v2h4v12h-2v6h-4v4H18v-2h-4v-6h-2Z" />
+    <path fill="#e9dfd3" d="M14 34h30v10h-2v6h-4v2H20v-2h-4v-6h-2Z" />
+    <path fill="#d6bfa1" d="M40 36h4v8h-2v6h-4v2H20v-2h16v-4h2v-6h2Z" />
+    <path fill="#f5ebdd" d="M16 38h2v8h-2Zm2 8h2v2h-2Z" />
+    <!-- Stepped rim, dark coffee and a small crema highlight. -->
+    <path fill="#f5ebdd" d="M16 28h24v2h4v2h2v4h-2v2H16v-2h-2v-6h2Z" />
+    <path fill="#54392c" d="M18 30h22v2h2v4H18v-2h-2v-2h2Z" />
+    <path fill="#34251f" d="M20 32h20v2H20Z" />
+    <path fill="#b78d64" d="M18 30h10v2H18Zm20 4h4v2h-4Z" />
+  </g>
+</svg>

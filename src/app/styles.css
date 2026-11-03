@@ -1,0 +1,83 @@
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-600.css';
+@import 'tailwindcss';
+
+/* Load the three upstream subsets that contain the catalog's kana, rather
+   than emitting the complete Japanese font (including thousands of kanji). */
+@font-face {
+  font-family: 'Noto Sans JP';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('@fontsource/noto-sans-jp/files/noto-sans-jp-119-400-normal.woff2')
+    format('woff2');
+  unicode-range:
+    U+3041-307F, U+3081-308F, U+3091-3093, U+30A1-30E1, U+30E3-30ED,
+    U+30EF-30F0, U+30F2-30F4;
+}
+
+@font-face {
+  font-family: 'Noto Sans JP';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('@fontsource/noto-sans-jp/files/noto-sans-jp-115-400-normal.woff2')
+    format('woff2');
+  unicode-range: U+3080;
+}
+
+@font-face {
+  font-family: 'Noto Sans JP';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url('@fontsource/noto-sans-jp/files/noto-sans-jp-116-400-normal.woff2')
+    format('woff2');
+  unicode-range: U+30E2;
+}
+
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-kana: 'Noto Sans JP', sans-serif;
+  --color-mocha: #211c19;
+  --color-line: #3b322c;
+  --color-line-strong: #756759;
+  --color-ink: #e9dfd3;
+  --color-muted: #b6a79b;
+  --color-hiragana: #c5a27d;
+  --color-katakana: #a0a58a;
+  --color-coral: #fa8c94;
+}
+
+@layer base {
+  :root {
+    scroll-padding-bottom: calc(var(--selection-footer-height, 0px) + 1rem);
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background: var(--color-mocha);
+    color-scheme: dark;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    margin: 0;
+  }
+
+  button,
+  input,
+  select {
+    font: inherit;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  ::selection {
+    background: #c5a27d40;
+    color: var(--color-ink);
+  }
+}

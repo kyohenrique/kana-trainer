@@ -1,0 +1,30 @@
+export const pt = {
+  app: {
+    tagline: 'Pratique kana enquanto toma um café.',
+    title: 'Escolha seus kana · Kana Trainer',
+    description: 'Escolha hiragana e katakana para praticar no seu ritmo.',
+    skip: 'Pular para a seleção',
+    language: 'Idioma',
+    home: 'Kana Trainer — seleção de kana',
+  },
+  selection: {
+    title: 'Escolha seus kana.',
+    writing: 'Escrita',
+    hiragana: 'Hiragana',
+    katakana: 'Katakana',
+    both: 'Ambos',
+    group: 'Selecionar grupo {{name}}',
+    row: 'Selecionar linha {{row}} de {{script}} — {{category}}',
+    kana: '{{glyph}} ({{reading}}), {{script}}',
+    selected_zero: 'kana selecionados',
+    selected_one: 'kana selecionado',
+    selected_other: 'kana selecionados',
+    notSaved:
+      'O navegador não permitiu salvar. Suas escolhas valem nesta visita.',
+    empty: 'Selecione ao menos um kana para montar seu treino.',
+    comingSoon: 'Treinamento em breve',
+    basic: { title: 'Básicos' },
+    marks: { title: 'Variações' },
+    combinations: { title: 'Combinações' },
+  },
+}
