@@ -64,6 +64,18 @@
 
   body {
     margin: 0;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Keep normal editing available inside answer fields and editable areas. */
+  input,
+  textarea,
+  [contenteditable=''],
+  [contenteditable='true' i],
+  [contenteditable='plaintext-only' i] {
+    -webkit-user-select: text;
+    user-select: text;
   }
 
   button,
