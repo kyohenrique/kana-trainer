@@ -7,12 +7,14 @@ import {
 } from '../../core/kana/catalog'
 import { usePreferences } from '../../shared/preferences/context'
 import { KanaGroup } from './KanaGroup'
+import { useSelectionFeedback } from './useSelectionFeedback'
 
 const modes: readonly ScriptMode[] = ['hiragana', 'katakana', 'both']
 
 export function SelectionPage() {
   const { t } = useTranslation()
   const { preferences, setMode, saved } = usePreferences()
+  const { feedback, changeSelection, cancelFeedback } = useSelectionFeedback()
   const footer = useRef<HTMLElement>(null)
   const count = selectedKana(
     preferences.selectedPairIds,
@@ -66,7 +68,10 @@ export function SelectionPage() {
                   name="script"
                   value={mode}
                   checked={preferences.mode === mode}
-                  onChange={() => setMode(mode)}
+                  onChange={() => {
+                    cancelFeedback()
+                    setMode(mode)
+                  }}
                   className="peer sr-only"
                 />
                 <span
@@ -92,7 +97,12 @@ export function SelectionPage() {
 
       <div className="grid items-start gap-x-10 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-9">
         {categories.map((category) => (
-          <KanaGroup key={category} category={category} />
+          <KanaGroup
+            key={category}
+            category={category}
+            feedback={feedback}
+            onSelectionChange={changeSelection}
+          />
         ))}
       </div>
 

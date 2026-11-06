@@ -81,3 +81,78 @@
     color: var(--color-ink);
   }
 }
+
+.kana-layer {
+  --kana-active-color: var(--selection-color);
+}
+
+.kana-back {
+  --kana-active-color: var(--color-katakana);
+}
+
+.kana-feedback[data-feedback] .kana-layer {
+  animation-duration: var(--kana-feedback-duration);
+  animation-delay: var(--kana-feedback-delay);
+  animation-timing-function: ease-out;
+  animation-fill-mode: backwards;
+}
+
+.kana-feedback[data-feedback] {
+  animation: kana-tap var(--kana-feedback-duration) ease-out
+    var(--kana-feedback-delay) backwards;
+}
+
+.kana-feedback[data-feedback='select'] .kana-layer {
+  animation-name: kana-select;
+}
+
+.kana-feedback[data-feedback='deselect'] .kana-layer {
+  animation-name: kana-deselect;
+}
+
+@keyframes kana-select {
+  from {
+    background-color: var(--color-mocha);
+    border-color: var(--color-line-strong);
+    color: var(--color-muted);
+  }
+  1%,
+  to {
+    background-color: var(--kana-active-color);
+    border-color: var(--kana-active-color);
+    color: var(--color-mocha);
+  }
+}
+
+@keyframes kana-deselect {
+  from {
+    background-color: var(--kana-active-color);
+    border-color: var(--kana-active-color);
+    color: var(--color-mocha);
+  }
+  1%,
+  to {
+    background-color: var(--color-mocha);
+    border-color: var(--color-line-strong);
+    color: var(--color-muted);
+  }
+}
+
+/* Switch foreground and background together: cross-fading both would briefly
+   erase the kana at the midpoint. The small tap supplies the soft transition. */
+@keyframes kana-tap {
+  from,
+  to {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kana-feedback[data-feedback],
+  .kana-feedback[data-feedback] .kana-layer {
+    animation: none;
+  }
+}

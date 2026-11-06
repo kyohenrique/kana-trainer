@@ -1,8 +1,15 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { I18nextProvider } from 'react-i18next'
 import { MemoryRouter } from 'react-router'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { SelectionSounds } from './selectionSounds'
 import { App } from '../../app/App'
 import { createAppI18n } from '../../i18n'
 import { PreferencesProvider } from '../../shared/preferences/PreferencesProvider'
@@ -31,6 +38,64 @@ async function renderApp(language: Language = 'pt', route = '/') {
 }
 
 describe('kana selection', () => {
+  it('cancels feedback on script changes, page hiding and unmount', async () => {
+    const stop = vi.spyOn(SelectionSounds.prototype, 'stop')
+    const dispose = vi.spyOn(SelectionSounds.prototype, 'dispose')
+    const user = userEvent.setup()
+    const view = await renderApp()
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Selecionar grupo Básicos' }),
+    )
+    stop.mockClear()
+    await user.click(screen.getByRole('radio', { name: 'Katakana' }))
+    expect(stop).toHaveBeenCalledOnce()
+    stop.mockClear()
+    vi.spyOn(document, 'hidden', 'get').mockReturnValue(true)
+    fireEvent(document, new Event('visibilitychange'))
+    expect(stop).toHaveBeenCalledOnce()
+    view.unmount()
+    expect(dispose).toHaveBeenCalledOnce()
+  })
+
+  it('only sounds the changed pairs when completing a partial group', async () => {
+    const play = vi
+      .spyOn(SelectionSounds.prototype, 'play')
+      .mockImplementation(() => {})
+    const user = userEvent.setup()
+    await renderApp()
+    expect(play).not.toHaveBeenCalled()
+    for (const name of ['あ (a), Hiragana', 'う (u), Hiragana']) {
+      await user.click(screen.getByRole('button', { name }))
+    }
+    play.mockClear()
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Selecionar grupo Básicos' }),
+    )
+    expect(play).toHaveBeenCalledExactlyOnceWith(true, [0, 45])
+    expect(within(screen.getByRole('status')).getByText('46')).toBeVisible()
+    expect(loadPreferences('pt', localStorage).selectedPairIds).toHaveLength(46)
+  })
+
+  it('uses one sound for a paired tile and accepts rapid reversals without losing focus', async () => {
+    const play = vi
+      .spyOn(SelectionSounds.prototype, 'play')
+      .mockImplementation(() => {})
+    const user = userEvent.setup()
+    await renderApp()
+    await user.click(screen.getByRole('radio', { name: 'Ambos' }))
+    expect(play).not.toHaveBeenCalled()
+    const pair = screen.getByRole('button', { name: 'あ / ア (a), Ambos' })
+    pair.focus()
+    await user.keyboard('  ')
+    expect(play.mock.calls).toEqual([
+      [false, [0]],
+      [true, [0]],
+    ])
+    expect(pair).toHaveAttribute('aria-pressed', 'true')
+    expect(pair).toHaveFocus()
+    expect(within(screen.getByRole('status')).getByText('92')).toBeVisible()
+  })
+
   it('starts with basics selected and supports individual, row and category controls', async () => {
     const user = userEvent.setup()
     await renderApp()

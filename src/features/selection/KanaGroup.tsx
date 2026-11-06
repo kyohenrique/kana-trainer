@@ -7,6 +7,7 @@ import {
 import { usePreferences } from '../../shared/preferences/context'
 import { Checkbox } from '../../shared/ui/Checkbox'
 import { KanaTile } from './KanaTile'
+import type { SelectionFeedback } from './feedbackPlan'
 
 function getChecked(
   ids: readonly string[],
@@ -16,9 +17,15 @@ function getChecked(
   return count === ids.length ? true : count === 0 ? false : 'mixed'
 }
 
-export function KanaGroup({ category }: { category: Category }) {
+interface Props {
+  category: Category
+  feedback: SelectionFeedback
+  onSelectionChange: (ids: readonly string[], selected: boolean) => void
+}
+
+export function KanaGroup({ category, feedback, onSelectionChange }: Props) {
   const { t } = useTranslation()
-  const { preferences, setSelected } = usePreferences()
+  const { preferences } = usePreferences()
   const selected = new Set(preferences.selectedPairIds)
   const rows = kanaPairRows.filter((row) => row.category === category)
   const ids = rows.flatMap((row) =>
@@ -34,7 +41,7 @@ export function KanaGroup({ category }: { category: Category }) {
         <Checkbox
           checked={getChecked(ids, selected)}
           label={t('selection.group', { name: title })}
-          onChange={(checked) => setSelected(ids, checked)}
+          onChange={(checked) => onSelectionChange(ids, checked)}
         />
         <h2 id={`${category}-heading`} className="text-sm font-medium text-ink">
           {title}
@@ -54,7 +61,7 @@ export function KanaGroup({ category }: { category: Category }) {
                   script: t(`selection.${preferences.mode}`),
                   category: title,
                 })}
-                onChange={(checked) => setSelected(rowIds, checked)}
+                onChange={(checked) => onSelectionChange(rowIds, checked)}
               />
               <div
                 className={`grid min-w-0 flex-1 gap-2 pr-1 pb-1 ${row.slots.length === 1 ? 'grid-cols-1' : category === 'combinations' ? 'grid-cols-3' : 'grid-cols-5'}`}
@@ -68,8 +75,10 @@ export function KanaGroup({ category }: { category: Category }) {
                       pair={pair}
                       mode={preferences.mode}
                       selected={selected.has(pair.id)}
+                      feedbackRevision={feedback.revision}
+                      feedbackDelay={feedback.delays.get(pair.id)}
                       onToggle={() =>
-                        setSelected([pair.id], !selected.has(pair.id))
+                        onSelectionChange([pair.id], !selected.has(pair.id))
                       }
                     />
                   ),
