@@ -32,13 +32,24 @@ export function SelectionPage() {
         `${element.getBoundingClientRect().height}px`,
       )
     measure()
+    let measurementFrame: number | undefined
     const observer =
       typeof ResizeObserver === 'undefined'
         ? undefined
-        : new ResizeObserver(measure)
+        : new ResizeObserver(() => {
+            if (measurementFrame !== undefined)
+              cancelAnimationFrame(measurementFrame)
+            // Updating the reserved space can change scrollbar width and wrap
+            // the footer again. Measure outside the observer's current cycle.
+            measurementFrame = requestAnimationFrame(() => {
+              measurementFrame = undefined
+              measure()
+            })
+          })
     observer?.observe(element)
     return () => {
       observer?.disconnect()
+      if (measurementFrame !== undefined) cancelAnimationFrame(measurementFrame)
       root.style.removeProperty('--selection-footer-height')
     }
   }, [])
@@ -118,12 +129,12 @@ export function SelectionPage() {
           <button
             type="button"
             disabled
-            className="min-h-11 rounded-md border border-line-strong px-3 py-2 text-xs text-muted disabled:cursor-not-allowed sm:px-5 sm:text-sm"
+            className={`min-h-11 rounded-md border border-line-strong px-3 py-2 text-xs text-muted disabled:cursor-not-allowed sm:px-5 sm:text-sm ${count === 0 ? 'sm:row-span-2' : ''}`}
           >
             {t('selection.comingSoon')}
           </button>
           {count === 0 && (
-            <p className="col-span-2 text-xs text-muted">
+            <p className="col-span-2 text-xs text-muted sm:col-span-1">
               {t('selection.empty')}
             </p>
           )}
