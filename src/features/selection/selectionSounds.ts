@@ -1,8 +1,21 @@
+const attackSeconds = 0.0015
+const releaseSeconds = 0.012
+const tailSeconds = 0.005
+const envelopeFloor = 0.0001
+
+interface Voice {
+  oscillator: OscillatorNode
+  gain: GainNode
+  release: GainNode
+  start: number
+  end: number
+}
+
 // Original, quiet modal percussion. No audio files or playback on page load.
 export class SelectionSounds {
   private context: AudioContext | undefined
   private generation = 0
-  private voices = new Set<{ oscillator: OscillatorNode; gain: GainNode }>()
+  private voices = new Set<Voice>()
 
   play(selected: boolean, delays: readonly number[]) {
     this.stop()
@@ -54,6 +67,11 @@ export class SelectionSounds {
     ] as const) {
       const oscillator = context.createOscillator()
       const gain = context.createGain()
+      // A cancelled future envelope must never fall back to the default gain of 1.
+      gain.gain.value = 0
+      // Fade cancellation independently, leaving the tap's envelope intact.
+      const release = context.createGain()
+      release.gain.value = 1
       oscillator.type = 'sine'
       oscillator.frequency.setValueAtTime(fundamental * ratio, start)
       oscillator.frequency.exponentialRampToValueAtTime(
@@ -61,29 +79,41 @@ export class SelectionSounds {
         start + duration,
       )
       gain.gain.setValueAtTime(0, start)
-      gain.gain.linearRampToValueAtTime(level, start + 0.0015)
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration)
+      gain.gain.linearRampToValueAtTime(level, start + attackSeconds)
+      gain.gain.exponentialRampToValueAtTime(envelopeFloor, start + duration)
       oscillator.connect(gain)
-      gain.connect(context.destination)
-      const voice = { oscillator, gain }
+      gain.connect(release)
+      release.connect(context.destination)
+      const end = start + duration + tailSeconds
+      const voice = { oscillator, gain, release, start, end }
       this.voices.add(voice)
       oscillator.onended = () => {
         oscillator.disconnect()
         gain.disconnect()
+        release.disconnect()
         this.voices.delete(voice)
       }
       oscillator.start(start)
-      oscillator.stop(start + duration + 0.005)
+      oscillator.stop(end)
     }
   }
 
   stop() {
     this.generation++
     const now = this.context?.currentTime ?? 0
-    for (const { oscillator, gain } of this.voices) {
-      gain.gain.cancelScheduledValues(now)
-      gain.gain.setTargetAtTime(0, now, 0.003)
-      oscillator.stop(now + 0.012)
+    for (const voice of this.voices) {
+      const { oscillator, gain, release, start, end } = voice
+      if (now <= start) {
+        gain.gain.cancelScheduledValues(now)
+        gain.gain.setValueAtTime(0, now)
+        oscillator.stop(now)
+      } else if (now < end) {
+        // Reach exact silence without extending a nearly finished tap.
+        const releaseEnd = Math.min(now + releaseSeconds, end)
+        release.gain.setValueAtTime(1, now)
+        release.gain.linearRampToValueAtTime(0, releaseEnd)
+        oscillator.stop(releaseEnd)
+      }
     }
     this.voices.clear()
   }
