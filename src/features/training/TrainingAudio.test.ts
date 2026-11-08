@@ -42,7 +42,7 @@ function fixture() {
   return context
 }
 describe('training audio', () => {
-  it('plays a stronger single success tone and a distinct two-pulse error without fetching speech', async () => {
+  it('plays gentle lower tones with distinct success and error patterns without fetching speech', async () => {
     const context = fixture()
     const fetcher = vi.fn()
     vi.stubGlobal('fetch', fetcher)
@@ -56,8 +56,8 @@ describe('training audio', () => {
     )
     const success = context.createGain.mock.results[1]!.value.gain
     expect(success.linearRampToValueAtTime).toHaveBeenCalledExactlyOnceWith(
-      0.12,
-      1.006,
+      0.26 * 0.75,
+      1.014,
     )
     await audio.play(
       'hiragana:あ',
@@ -68,12 +68,28 @@ describe('training audio', () => {
     )
     const error = context.createGain.mock.results[3]!.value.gain
     expect(error.linearRampToValueAtTime).toHaveBeenCalledTimes(2)
+    expect(error.linearRampToValueAtTime).toHaveBeenCalledWith(
+      0.32 * 0.75,
+      1.014,
+    )
+    expect(error.linearRampToValueAtTime).toHaveBeenCalledWith(
+      0.28 * 0.75,
+      1.124,
+    )
     expect(
       context.createOscillator.mock.results[0]!.value.frequency.setValueAtTime,
-    ).toHaveBeenCalledWith(760, 1)
+    ).toHaveBeenCalledWith(392, 1)
     expect(
       context.createOscillator.mock.results[1]!.value.frequency.setValueAtTime,
-    ).toHaveBeenCalledWith(520, 1)
+    ).toHaveBeenCalledWith(294, 1)
+    expect(
+      context.createOscillator.mock.results[0]!.value.frequency
+        .exponentialRampToValueAtTime,
+    ).toHaveBeenCalledWith(440, 1.08)
+    expect(
+      context.createOscillator.mock.results[1]!.value.frequency
+        .exponentialRampToValueAtTime,
+    ).toHaveBeenCalledWith(220, 1.2)
     expect(fetcher).not.toHaveBeenCalled()
   })
   it('supports independent speech volume and silent effects', async () => {

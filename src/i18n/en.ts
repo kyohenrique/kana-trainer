@@ -15,6 +15,9 @@ export const en = {
     hint: 'Confirm with Enter or Space.',
   },
   training: {
+    keyboard: 'Romaji keyboard',
+    erase: 'Delete',
+    touchHint: 'Type and tap ↵ to confirm.',
     title: 'Practice at your own pace.',
     start: 'Start practice',
     answer: 'Your answer in romaji',

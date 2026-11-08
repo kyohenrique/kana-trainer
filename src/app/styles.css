@@ -283,6 +283,100 @@
 .training-settings::backdrop {
   background: #130f0bcc;
 }
+.training-page[data-keyboard='true'] {
+  padding-top: 0.5rem;
+  padding-bottom: calc(var(--training-keyboard-height, 172px) + 1rem);
+}
+.training-page[data-keyboard='true'] .training-window {
+  height: clamp(156px, 24dvh, 200px);
+  margin-top: 0;
+}
+.touch-keyboard {
+  position: fixed;
+  z-index: 20;
+  inset: auto 0 0;
+  border-top: 1px solid var(--color-line);
+  background: var(--color-mocha);
+  padding: 8px max(6px, env(safe-area-inset-right))
+    calc(10px + env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+}
+.touch-keyboard-keys {
+  max-width: 540px;
+  margin: auto;
+  display: grid;
+  gap: 6px;
+}
+.touch-keyboard-row {
+  display: grid;
+  grid-template-columns: repeat(20, minmax(0, 1fr));
+  gap: 4px;
+}
+.touch-keyboard-row-1 {
+  padding-inline: 5%;
+  grid-template-columns: repeat(18, minmax(0, 1fr));
+}
+.touch-key {
+  grid-column: span 2;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 5px;
+  background: #2d2621;
+  color: var(--color-ink);
+  box-shadow: 0 2px 0 #171310;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+}
+.touch-key-action {
+  grid-column: span 3;
+}
+.touch-key-confirm {
+  background: var(--color-hiragana);
+  color: var(--color-mocha);
+  border-color: var(--color-hiragana);
+}
+.touch-key:enabled:active {
+  background: var(--color-line-strong);
+  box-shadow: none;
+}
+.touch-key:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+.touch-key:disabled {
+  opacity: 0.4;
+}
+/* Short landscape screens put practice beside the keyboard instead of under it. */
+@media (min-width: 560px) and (max-height: 500px) {
+  :root:has(.training-page[data-keyboard='true']) header {
+    min-height: 44px;
+  }
+  :root:has(.training-page[data-keyboard='true']) header a,
+  :root:has(.training-page[data-keyboard='true']) header img {
+    width: 40px;
+    height: 40px;
+  }
+  .training-page[data-keyboard='true'] {
+    width: 46%;
+    margin-inline: 0;
+    padding: 0 12px 12px;
+  }
+  .training-page[data-keyboard='true'] .training-window {
+    --kana-step: 5.7rem;
+  }
+  .training-page[data-keyboard='true'] .training-kana {
+    font-size: 2rem;
+  }
+  .training-page[data-keyboard='true'] input {
+    font-size: 1rem;
+  }
+  .training-page[data-keyboard='true'] .touch-keyboard {
+    left: 46%;
+    border-top: 0;
+  }
+}
 .training-settings input:focus-visible {
   outline: 2px solid var(--color-ink);
   outline-offset: 2px;

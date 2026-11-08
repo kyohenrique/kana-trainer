@@ -95,25 +95,35 @@ export class TrainingAudio {
           envelope.disconnect()
           cleanup?.call(oscillator, event)
         }
-        oscillator.frequency.setValueAtTime(correct ? 760 : 520, now)
+        oscillator.type = 'sine'
+        oscillator.frequency.setValueAtTime(correct ? 392 : 294, now)
         oscillator.frequency.exponentialRampToValueAtTime(
-          correct ? 1020 : 380,
+          correct ? 440 : 247,
           now + 0.08,
         )
         envelope.gain.setValueAtTime(0, now)
-        envelope.gain.linearRampToValueAtTime(0.16 * effectsVolume, now + 0.006)
+        // Lower, narrower pitch movement and a slower attack soften repeated feedback.
+        envelope.gain.linearRampToValueAtTime(
+          (correct ? 0.26 : 0.32) * effectsVolume,
+          now + 0.014,
+        )
+        envelope.gain.setValueAtTime(
+          (correct ? 0.26 : 0.32) * effectsVolume,
+          now + 0.03,
+        )
         envelope.gain.exponentialRampToValueAtTime(
           0.0001,
           now + (correct ? 0.13 : 0.09),
         )
         if (!correct) {
-          oscillator.frequency.setValueAtTime(440, now + 0.11)
-          oscillator.frequency.exponentialRampToValueAtTime(310, now + 0.2)
+          oscillator.frequency.setValueAtTime(247, now + 0.11)
+          oscillator.frequency.exponentialRampToValueAtTime(220, now + 0.2)
           envelope.gain.setValueAtTime(0.0001, now + 0.11)
           envelope.gain.linearRampToValueAtTime(
-            0.14 * effectsVolume,
-            now + 0.116,
+            0.28 * effectsVolume,
+            now + 0.124,
           )
+          envelope.gain.setValueAtTime(0.28 * effectsVolume, now + 0.14)
           envelope.gain.exponentialRampToValueAtTime(0.0001, now + 0.21)
         }
         oscillator.start(now)

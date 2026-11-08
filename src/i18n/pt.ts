@@ -13,6 +13,9 @@ export const pt = {
     hint: 'Confirme com Enter ou Espaço.',
   },
   training: {
+    keyboard: 'Teclado de romaji',
+    erase: 'Apagar',
+    touchHint: 'Digite e toque em ↵ para confirmar.',
     title: 'Pratique no seu ritmo.',
     start: 'Iniciar treino',
     answer: 'Sua resposta em romaji',

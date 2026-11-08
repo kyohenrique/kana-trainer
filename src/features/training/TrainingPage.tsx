@@ -9,6 +9,8 @@ import { ActiveTimer } from './ActiveTimer'
 import { TrainingAudio } from './TrainingAudio'
 import { TrainingSettings } from './TrainingSettings'
 import { useAnswerKeyboard } from './useAnswerKeyboard'
+import { TouchKeyboard } from './TouchKeyboard'
+import { useTouchKeyboard } from './useTouchKeyboard'
 
 export function TrainingPage() {
   const { t } = useTranslation()
@@ -21,6 +23,29 @@ export function TrainingPage() {
   const input = useRef<HTMLInputElement>(null)
   const done = useRef<HTMLHeadingElement>(null)
   const played = useRef<string | null>(null)
+  const touchKeyboard = useTouchKeyboard()
+  const caret = useRef<number | null>(null)
+  useLayoutEffect(() => {
+    if (caret.current === null) return
+    input.current?.setSelectionRange(caret.current, caret.current)
+    caret.current = null
+  }, [text])
+  function editAnswer(
+    value: string,
+    erase: 'backward' | 'forward' | null = null,
+  ) {
+    const field = input.current
+    if (!field) return
+    let begin = field.selectionStart ?? field.value.length
+    let end = field.selectionEnd ?? begin
+    if (erase && begin === end) {
+      if (erase === 'backward') begin = Math.max(0, begin - 1)
+      else end = Math.min(field.value.length, end + 1)
+    }
+    caret.current = begin + value.length
+    setText(field.value.slice(0, begin) + value + field.value.slice(end))
+    field.focus({ preventScroll: true })
+  }
   const current = session ? getCurrentOccurrence(session) : undefined
   const latest = session?.attempts.at(-1)
   useAnswerKeyboard(input, !!current && !settingsOpen, setText)
@@ -66,6 +91,7 @@ export function TrainingPage() {
     <main
       id="main-content"
       tabIndex={-1}
+      data-keyboard={touchKeyboard && !!current ? 'true' : undefined}
       className="training-page mx-auto max-w-[1000px] px-5 pb-8 pt-5 outline-none sm:px-8"
     >
       <div className="flex items-center justify-between gap-3 text-xs text-muted">
@@ -176,6 +202,8 @@ export function TrainingPage() {
                 ref={input}
                 id="romaji"
                 value={text}
+                readOnly={touchKeyboard}
+                inputMode={touchKeyboard ? 'none' : 'text'}
                 onChange={(event) => {
                   const native = event.nativeEvent as InputEvent
                   setText(event.target.value.replace(/\s/g, ''))
@@ -198,6 +226,26 @@ export function TrainingPage() {
                 }}
                 onKeyDown={(event) => {
                   if (event.ctrlKey || event.metaKey || event.altKey) return
+                  if (event.nativeEvent.isComposing || event.keyCode === 229)
+                    return
+                  // A read-only mobile field suppresses the system keyboard;
+                  // hardware keyboards still edit through these same actions.
+                  if (touchKeyboard && /^[a-z]$/i.test(event.key)) {
+                    event.preventDefault()
+                    editAnswer(event.key)
+                    return
+                  }
+                  if (
+                    touchKeyboard &&
+                    (event.key === 'Backspace' || event.key === 'Delete')
+                  ) {
+                    event.preventDefault()
+                    editAnswer(
+                      '',
+                      event.key === 'Backspace' ? 'backward' : 'forward',
+                    )
+                    return
+                  }
                   if (event.key !== 'Enter' && event.key !== ' ') return
                   event.preventDefault()
                   if (
@@ -217,18 +265,28 @@ export function TrainingPage() {
                 placeholder={t('training.answer')}
                 className="min-h-14 min-w-0 flex-1 bg-transparent px-3 text-center text-lg outline-none"
               />
-              <button
-                type="submit"
-                aria-label={t('training.submit')}
-                className="training-control text-2xl text-hiragana"
-              >
-                →
-              </button>
+              {!touchKeyboard && (
+                <button
+                  type="submit"
+                  aria-label={t('training.submit')}
+                  className="training-control text-2xl text-hiragana"
+                >
+                  →
+                </button>
+              )}
             </div>
             <p id="answer-hint" className="mt-4 text-center text-xs text-muted">
-              {t('training.hint')}
+              {t(touchKeyboard ? 'training.touchHint' : 'training.hint')}
             </p>
           </form>
+          {touchKeyboard && !settingsOpen && (
+            <TouchKeyboard
+              onLetter={(letter) => editAnswer(letter)}
+              onDelete={() => editAnswer('', 'backward')}
+              onConfirm={() => input.current?.form?.requestSubmit()}
+              hasAnswer={text.length > 0}
+            />
+          )}
         </>
       ) : (
         <div className="py-16 text-center">
