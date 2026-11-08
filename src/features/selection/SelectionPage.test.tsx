@@ -178,14 +178,15 @@ describe('kana selection', () => {
       screen.getByRole('checkbox', { name: 'Selecionar grupo Básicos' }),
     )
     expect(loadPreferences('pt-BR', localStorage).selectedPairIds).toEqual([])
+    expect(
+      screen.getByRole('button', { name: 'Iniciar treino' }),
+    ).toBeDisabled()
     const a = screen.getByRole('button', { name: 'あ (a), Hiragana' })
     a.focus()
     await user.keyboard(' ')
     expect(a).toHaveFocus()
     expect(a).toHaveAttribute('aria-pressed', 'true')
-    expect(
-      screen.getByRole('button', { name: 'Treinamento em breve' }),
-    ).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Iniciar treino' })).toBeEnabled()
     expect(localStorage.getItem(preferencesKey)).not.toContain('attempts')
   })
 

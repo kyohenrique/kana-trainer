@@ -1,9 +1,14 @@
 import { createContext, useContext } from 'react'
 import type { ScriptMode } from '../../core/kana/catalog'
-import type { Language, Preferences } from './storage'
+import type { Language, Preferences, Voice } from './storage'
 
 export interface PreferencesContextValue {
   preferences: Preferences
+  setVolume: (
+    channel: 'effectsVolume' | 'pronunciationVolume',
+    volume: number,
+  ) => void
+  setVoice: (voice: Voice) => void
   saved: boolean
   setLanguage: (language: Language) => void
   setMode: (mode: ScriptMode) => void

@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router'
+import { useTraining } from '../training/context'
 import { useLayoutEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -13,6 +15,8 @@ const modes: readonly ScriptMode[] = ['hiragana', 'katakana', 'both']
 
 export function SelectionPage() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
+  const { start } = useTraining()
   const { preferences, setMode, saved } = usePreferences()
   const { feedback, changeSelection, cancelFeedback } = useSelectionFeedback()
   const footer = useRef<HTMLElement>(null)
@@ -128,10 +132,15 @@ export function SelectionPage() {
           </p>
           <button
             type="button"
-            disabled
-            className={`min-h-11 rounded-md border border-line-strong px-3 py-2 text-xs text-muted disabled:cursor-not-allowed sm:px-5 sm:text-sm ${count === 0 ? 'sm:row-span-2' : ''}`}
+            disabled={count === 0}
+            onClick={() => {
+              cancelFeedback()
+              start(selectedKana(preferences.selectedPairIds, preferences.mode))
+              navigate('/training')
+            }}
+            className={`min-h-11 cursor-pointer rounded-md border border-transparent bg-hiragana px-3 py-2 text-xs font-medium text-mocha transition-colors enabled:hover:bg-ink enabled:active:bg-hiragana/90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-hiragana disabled:cursor-not-allowed disabled:border-line-strong disabled:bg-transparent disabled:text-muted motion-reduce:transition-none sm:px-5 sm:text-sm ${count === 0 ? 'sm:row-span-2' : ''}`}
           >
-            {t('selection.comingSoon')}
+            {t('training.start')}
           </button>
           {count === 0 && (
             <p className="col-span-2 text-xs text-muted sm:col-span-1">

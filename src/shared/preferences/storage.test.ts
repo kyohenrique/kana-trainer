@@ -9,6 +9,33 @@ import {
 } from './storage'
 
 describe('language and preferences', () => {
+  it('remembers voice and both volumes, including silence, without saving session state', () => {
+    const preferences = {
+      ...createDefaultPreferences('pt'),
+      voice: 'male' as const,
+      effectsVolume: 0,
+      pronunciationVolume: 0.35,
+    }
+    savePreferences(preferences, localStorage)
+    expect(loadPreferences('en', localStorage)).toEqual(preferences)
+  })
+  it.each([-1, 2, 'loud', null])(
+    'uses defaults for invalid saved volume %s',
+    (value) => {
+      localStorage.setItem(
+        preferencesKey,
+        JSON.stringify({
+          version: 2,
+          effectsVolume: value,
+          pronunciationVolume: value,
+        }),
+      )
+      expect(loadPreferences('pt', localStorage)).toMatchObject({
+        effectsVolume: 0.75,
+        pronunciationVolume: 0.8,
+      })
+    },
+  )
   it.each([
     ['pt-BR', 'pt'],
     ['pt-PT', 'pt'],
@@ -32,7 +59,15 @@ describe('language and preferences', () => {
     expect(loadPreferences('pt-PT', localStorage)).toEqual(preferences)
     expect(
       Object.keys(JSON.parse(localStorage.getItem(preferencesKey) ?? '{}')),
-    ).toEqual(['version', 'language', 'mode', 'selectedPairIds'])
+    ).toEqual([
+      'version',
+      'voice',
+      'effectsVolume',
+      'pronunciationVolume',
+      'language',
+      'mode',
+      'selectedPairIds',
+    ])
   })
 
   it('removes obsolete and duplicate identifiers without dropping valid choices', () => {
@@ -100,6 +135,9 @@ describe('language and preferences', () => {
     )
     const migrated = loadPreferences('pt-BR', localStorage)
     expect(migrated).toEqual({
+      voice: 'female',
+      effectsVolume: 0.75,
+      pronunciationVolume: 0.8,
       language: 'en',
       mode: 'katakana',
       selectedPairIds: ['kana:し', 'kana:ぢ', 'kana:ぴょ'],

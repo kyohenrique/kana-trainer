@@ -6,7 +6,11 @@ import {
 } from '../../core/kana/catalog'
 
 export type Language = 'pt' | 'en'
+export type Voice = 'female' | 'male'
 export interface Preferences {
+  effectsVolume: number
+  pronunciationVolume: number
+  voice: Voice
   language: Language
   mode: ScriptMode
   selectedPairIds: string[]
@@ -25,6 +29,9 @@ export function detectLanguage(browserLanguage: string): Language {
 
 export function createDefaultPreferences(browserLanguage: string): Preferences {
   return {
+    effectsVolume: 0.75,
+    pronunciationVolume: 0.8,
+    voice: 'female',
     language: detectLanguage(browserLanguage),
     mode: 'hiragana',
     selectedPairIds: defaultSelection(),
@@ -37,6 +44,15 @@ export function browserStorage(): PreferenceStorage | undefined {
   } catch {
     return undefined
   }
+}
+
+function readVolume(value: unknown, fallback: number): number {
+  return typeof value === 'number' &&
+    Number.isFinite(value) &&
+    value >= 0 &&
+    value <= 1
+    ? value
+    : fallback
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -71,6 +87,12 @@ export function loadPreferences(
       selectedPairIds = [...new Set(validIds)]
     }
     return {
+      effectsVolume: readVolume(stored.effectsVolume, defaults.effectsVolume),
+      pronunciationVolume: readVolume(
+        stored.pronunciationVolume,
+        defaults.pronunciationVolume,
+      ),
+      voice: stored.voice === 'male' ? 'male' : 'female',
       language:
         stored.language === 'pt' || stored.language === 'en'
           ? stored.language
@@ -98,6 +120,9 @@ export function savePreferences(
       preferencesKey,
       JSON.stringify({
         version: 2,
+        voice: preferences.voice,
+        effectsVolume: preferences.effectsVolume,
+        pronunciationVolume: preferences.pronunciationVolume,
         language: preferences.language,
         mode: preferences.mode,
         selectedPairIds: preferences.selectedPairIds,

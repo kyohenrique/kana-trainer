@@ -1,22 +1,27 @@
 import { useEffect } from 'react'
-import { Link, Navigate, Route, Routes } from 'react-router'
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import coffeeCup from '../assets/coffee-cup.svg'
+import { TrainingPage } from '../features/training/TrainingPage'
+import { TrainingProvider } from '../features/training/TrainingProvider'
 import { SelectionPage } from '../features/selection/SelectionPage'
 import { usePreferences } from '../shared/preferences/context'
 import { Icon } from '../shared/ui/Icon'
 
 export function App() {
   const { t } = useTranslation()
+  const location = useLocation()
   const { preferences, setLanguage } = usePreferences()
   useEffect(() => {
     document.documentElement.lang =
       preferences.language === 'pt' ? 'pt-BR' : 'en'
-    document.title = t('app.title')
+    document.title = t(
+      location.pathname === '/training' ? 'training.pageTitle' : 'app.title',
+    )
     document
       .querySelector('meta[name="description"]')
       ?.setAttribute('content', t('app.description'))
-  }, [preferences.language, t])
+  }, [preferences.language, t, location.pathname])
 
   return (
     <>
@@ -69,13 +74,15 @@ export function App() {
           />
         </div>
       </header>
-      <Routes>
-        <Route path="/" element={<SelectionPage />} />
-        {/* Until a session exists, direct links return to the selection screen. */}
-        <Route path="/training" element={<Navigate to="/" replace />} />
-        <Route path="/results" element={<Navigate to="/" replace />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <TrainingProvider>
+        <Routes>
+          <Route path="/" element={<SelectionPage />} />
+
+          <Route path="/training" element={<TrainingPage />} />
+          <Route path="/results" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </TrainingProvider>
     </>
   )
 }

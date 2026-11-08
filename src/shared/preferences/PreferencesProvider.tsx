@@ -34,6 +34,16 @@ export function PreferencesProvider({
       value={{
         preferences,
         saved,
+        setVolume(channel, volume) {
+          if (Number.isFinite(volume))
+            commit({
+              ...preferences,
+              [channel]: Math.max(0, Math.min(1, volume)),
+            })
+        },
+        setVoice(voice) {
+          commit({ ...preferences, voice })
+        },
         setLanguage(language) {
           commit({ ...preferences, language })
           void i18n.changeLanguage(language)
