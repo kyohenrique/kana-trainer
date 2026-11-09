@@ -1,23 +1,27 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { usePreferences } from '../../shared/preferences/context'
-import type { TrainingAudio } from './TrainingAudio'
+import { TrainingAudio } from '../training/TrainingAudio'
 
-export function TrainingSettings({
-  audio,
-  onClose,
-}: {
-  audio: TrainingAudio
-  onClose: () => void
-}) {
+export function SettingsDialog({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation()
-  const { preferences, setVoice, setVolume, saved } = usePreferences()
+  const { preferences, setLanguage, setVoice, setVolume, saved } =
+    usePreferences()
+  const [audio] = useState(() => new TrainingAudio())
   const dialog = useRef<HTMLDialogElement>(null)
   useEffect(() => {
     const element = dialog.current!
     element.showModal()
-    return () => element.close()
-  }, [])
+    const stopWhenHidden = () => {
+      if (document.hidden) audio.stop()
+    }
+    document.addEventListener('visibilitychange', stopWhenHidden)
+    return () => {
+      element.close()
+      audio.dispose()
+      document.removeEventListener('visibilitychange', stopWhenHidden)
+    }
+  }, [audio])
   return (
     <dialog
       ref={dialog}
@@ -29,7 +33,10 @@ export function TrainingSettings({
         dialog.current?.close()
       }}
       onClose={(event) => {
-        if (!event.currentTarget.open) onClose()
+        if (!event.currentTarget.open) {
+          audio.stop()
+          onClose()
+        }
       }}
     >
       <div className="flex items-center justify-between gap-4">
@@ -50,9 +57,33 @@ export function TrainingSettings({
         id="settings-description"
         className="mt-1 text-xs leading-relaxed text-muted"
       >
-        {t('settings.paused')}
+        {t('settings.description')}
       </p>
       <fieldset className="mt-7">
+        <legend className="sr-only">{t('app.language')}</legend>
+        <label className="flex items-center justify-between gap-4 text-sm">
+          {t('app.language')}
+          <select
+            className="training-control bg-mocha text-ink"
+            value={preferences.language}
+            onChange={(event) => {
+              const language = event.target.value
+              if (language === 'pt' || language === 'en') setLanguage(language)
+            }}
+          >
+            <option value="pt" lang="pt-BR">
+              Português
+            </option>
+            <option value="en" lang="en">
+              English
+            </option>
+          </select>
+        </label>
+      </fieldset>
+      <h3 className="mt-6 border-t border-line pt-5 text-sm font-medium">
+        {t('settings.audio')}
+      </h3>
+      <fieldset className="mt-4">
         <legend className="mb-3 text-sm">{t('settings.pronunciation')}</legend>
         <label className="flex items-center justify-between gap-4 text-sm text-muted">
           {t('training.voice')}

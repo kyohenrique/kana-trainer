@@ -2,6 +2,8 @@ import type { pt } from './pt'
 
 export const en = {
   settings: {
+    audio: 'Audio',
+    description: 'Your preferences are saved automatically.',
     settings: 'Settings',
     paused: 'Practice is paused while you adjust your preferences.',
     close: 'Close settings',

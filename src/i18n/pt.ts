@@ -1,5 +1,7 @@
 export const pt = {
   settings: {
+    audio: 'Áudio',
+    description: 'Suas preferências são salvas automaticamente.',
     settings: 'Ajustes',
     paused: 'O treino fica pausado enquanto você ajusta as opções.',
     close: 'Fechar ajustes',

@@ -3,9 +3,12 @@ import { usePreferences } from '../../shared/preferences/context'
 import { planSelectionFeedback, type SelectionFeedback } from './feedbackPlan'
 import { SelectionSounds } from './selectionSounds'
 
-export function useSelectionFeedback() {
+export function useSelectionFeedback(paused: boolean) {
   const { preferences, setSelected } = usePreferences()
   const [sounds] = useState(() => new SelectionSounds())
+  useEffect(() => {
+    if (paused) sounds.stop()
+  }, [paused, sounds])
   const [feedback, setFeedback] = useState<SelectionFeedback>({
     revision: 0,
     delays: new Map(),

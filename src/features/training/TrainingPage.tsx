@@ -7,17 +7,16 @@ import { usePreferences } from '../../shared/preferences/context'
 import { useTraining } from './context'
 import { ActiveTimer } from './ActiveTimer'
 import { TrainingAudio } from './TrainingAudio'
-import { TrainingSettings } from './TrainingSettings'
 import { useAnswerKeyboard } from './useAnswerKeyboard'
 import { TouchKeyboard } from './TouchKeyboard'
 import { useTouchKeyboard } from './useTouchKeyboard'
+import { Icon } from '../../shared/ui/Icon'
 
-export function TrainingPage() {
+export function TrainingPage({ settingsOpen }: { settingsOpen: boolean }) {
   const { t } = useTranslation()
   const { session, answer, start, clear } = useTraining()
   const { preferences, saved } = usePreferences()
   const [text, setText] = useState('')
-  const [settingsOpen, setSettingsOpen] = useState(false)
   const [audio] = useState(() => new TrainingAudio())
   const [timer] = useState(() => new ActiveTimer())
   const input = useRef<HTMLInputElement>(null)
@@ -54,6 +53,15 @@ export function TrainingPage() {
     if (current) input.current?.focus()
     else done.current?.focus()
   }, [current, timer])
+  useLayoutEffect(() => {
+    if (settingsOpen) {
+      timer.pause()
+      audio.stop()
+    } else if (current && !document.hidden) {
+      timer.resume()
+      input.current?.focus({ preventScroll: true })
+    } else if (!current) done.current?.focus()
+  }, [settingsOpen, current, timer, audio])
   useEffect(() => {
     const visibility = () => {
       if (document.hidden) {
@@ -92,53 +100,30 @@ export function TrainingPage() {
       id="main-content"
       tabIndex={-1}
       data-keyboard={touchKeyboard && !!current ? 'true' : undefined}
-      className="training-page mx-auto max-w-[1000px] px-5 pb-8 pt-5 outline-none sm:px-8"
+      className="training-page mx-auto max-w-[1000px] px-5 outline-none sm:px-8"
     >
-      <div className="flex items-center justify-between gap-3 text-xs text-muted">
+      <div className="training-toolbar">
         <Link
-          className="training-control"
+          className="training-control training-toolbar-action"
           to="/"
           onClick={() => {
             audio.stop()
             clear()
           }}
         >
+          <Icon name="arrow" className="size-4 rotate-180" />
           {t('training.back')}
         </Link>
-        <button
-          type="button"
-          className="training-control"
-          aria-haspopup="dialog"
-          onClick={() => {
-            timer.pause()
-            audio.stop()
-            setSettingsOpen(true)
-          }}
-        >
-          {t('settings.settings')}
-        </button>
       </div>
-      {settingsOpen && (
-        <TrainingSettings
-          audio={audio}
-          onClose={() => {
-            audio.stop()
-            setSettingsOpen(false)
-            if (current && !document.hidden) {
-              timer.resume()
-              input.current?.focus()
-            } else done.current?.focus()
-          }}
-        />
-      )}
       {!saved && (
         <p role="alert" className="mt-2 text-xs text-coral">
           {t('selection.notSaved')}
         </p>
       )}
       {current ? (
-        <>
+        <div className="training-stage">
           <h1 className="sr-only">{t('training.title')}</h1>
+          <p className="training-tagline">{t('app.tagline')}</p>
           <div className="training-window" aria-hidden="true">
             <div className="training-track">
               {session.sequence
@@ -149,6 +134,9 @@ export function TrainingPage() {
                   return (
                     <div
                       key={occurrence.id}
+                      data-compound={
+                        occurrence.kana.glyph.length > 1 ? 'true' : undefined
+                      }
                       className={`training-kana ${offset === 0 ? 'is-current' : ''} ${attempt ? (attempt.correct ? 'is-correct' : 'is-wrong') : ''}`}
                       style={{
                         transform: `translateX(calc(${offset} * var(--kana-step)))`,
@@ -159,7 +147,7 @@ export function TrainingPage() {
                           {occurrence.kana.reading}
                         </span>
                       )}
-                      <span className="kana-paper" lang="ja">
+                      <span className="training-glyph" lang="ja">
                         {occurrence.kana.glyph}
                       </span>
                       {attempt && (
@@ -173,7 +161,7 @@ export function TrainingPage() {
             </div>
           </div>
           <form
-            className="mx-auto max-w-lg"
+            className="training-answer"
             onSubmit={(event) => {
               event.preventDefault()
               if (!text.trim() || document.hidden || settingsOpen) return
@@ -197,7 +185,10 @@ export function TrainingPage() {
             <p className="sr-only" id="current-kana">
               {t('training.current', { kana: current.kana.glyph })}
             </p>
-            <div className="flex items-center border-b border-line-strong focus-within:border-hiragana">
+            <div
+              className="training-answer-field"
+              data-submit={!touchKeyboard ? 'true' : undefined}
+            >
               <input
                 ref={input}
                 id="romaji"
@@ -263,19 +254,19 @@ export function TrainingPage() {
                 spellCheck={false}
                 enterKeyHint="go"
                 placeholder={t('training.answer')}
-                className="min-h-14 min-w-0 flex-1 bg-transparent px-3 text-center text-lg outline-none"
+                className="min-h-14 min-w-0 w-full bg-transparent px-3 text-center text-lg outline-none"
               />
               {!touchKeyboard && (
                 <button
                   type="submit"
                   aria-label={t('training.submit')}
-                  className="training-control text-2xl text-hiragana"
+                  className="training-control training-submit text-hiragana"
                 >
-                  →
+                  <Icon name="arrow" className="size-5" />
                 </button>
               )}
             </div>
-            <p id="answer-hint" className="mt-4 text-center text-xs text-muted">
+            <p id="answer-hint" className="training-hint">
               {t(touchKeyboard ? 'training.touchHint' : 'training.hint')}
             </p>
           </form>
@@ -287,7 +278,7 @@ export function TrainingPage() {
               hasAnswer={text.length > 0}
             />
           )}
-        </>
+        </div>
       ) : (
         <div className="py-16 text-center">
           <h1 ref={done} tabIndex={-1} className="text-2xl outline-none">

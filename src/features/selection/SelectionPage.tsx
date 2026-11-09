@@ -13,12 +13,13 @@ import { useSelectionFeedback } from './useSelectionFeedback'
 
 const modes: readonly ScriptMode[] = ['hiragana', 'katakana', 'both']
 
-export function SelectionPage() {
+export function SelectionPage({ settingsOpen }: { settingsOpen: boolean }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { start } = useTraining()
   const { preferences, setMode, saved } = usePreferences()
-  const { feedback, changeSelection, cancelFeedback } = useSelectionFeedback()
+  const { feedback, changeSelection, cancelFeedback } =
+    useSelectionFeedback(settingsOpen)
   const footer = useRef<HTMLElement>(null)
   const count = selectedKana(
     preferences.selectedPairIds,

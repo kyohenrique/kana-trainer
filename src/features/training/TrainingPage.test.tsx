@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { I18nextProvider } from 'react-i18next'
 import { MemoryRouter } from 'react-router'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { TrainingAudio } from './TrainingAudio'
 import { ActiveTimer } from './ActiveTimer'
 import * as sessionCore from '../../core/session/session'
@@ -32,25 +32,6 @@ async function renderApp(language: Language = 'pt', route = '/') {
     </I18nextProvider>,
   )
 }
-
-// jsdom has no dialog top layer; model its open/close events for integration tests.
-beforeEach(() => {
-  Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
-    configurable: true,
-    value: function (this: HTMLDialogElement) {
-      this.setAttribute('open', '')
-      this.querySelector<HTMLButtonElement>('button')?.focus()
-    },
-  })
-  Object.defineProperty(HTMLDialogElement.prototype, 'close', {
-    configurable: true,
-    value: function (this: HTMLDialogElement) {
-      if (!this.open) return
-      this.removeAttribute('open')
-      this.dispatchEvent(new Event('close'))
-    },
-  })
-})
 
 describe('training integration', () => {
   afterEach(() => vi.unstubAllGlobals())
@@ -253,6 +234,12 @@ describe('training integration', () => {
       'effect',
     )
     expect(submit).not.toHaveBeenCalled()
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Idioma' }),
+      'en',
+    )
+    expect(screen.getByRole('dialog', { name: 'Settings' })).toBeVisible()
+    expect(field).toHaveValue('a')
     clock = 5500
     fireEvent(
       screen.getByRole('dialog'),
@@ -267,6 +254,7 @@ describe('training integration', () => {
       expect.objectContaining({ answer: 'a', activeTimeMs: 1000 }),
     )
     expect(loadPreferences('pt', localStorage)).toMatchObject({
+      language: 'en',
       effectsVolume: 0.25,
       pronunciationVolume: 0,
     })
@@ -291,6 +279,7 @@ describe('training integration', () => {
     fireEvent(screen.getByRole('main'), shortcut)
     expect(shortcut.defaultPrevented).toBe(false)
     expect(screen.getByRole('textbox')).toHaveValue('')
+    await userEvent.click(screen.getByRole('button', { name: 'Ajustes' }))
     const language = screen.getByRole('combobox', { name: 'Idioma' })
     language.focus()
     fireEvent.keyDown(language, { key: 'e' })

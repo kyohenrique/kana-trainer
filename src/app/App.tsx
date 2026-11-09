@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import coffeeCup from '../assets/coffee-cup.svg'
@@ -7,11 +7,13 @@ import { TrainingProvider } from '../features/training/TrainingProvider'
 import { SelectionPage } from '../features/selection/SelectionPage'
 import { usePreferences } from '../shared/preferences/context'
 import { Icon } from '../shared/ui/Icon'
+import { SettingsDialog } from '../features/settings/SettingsDialog'
 
 export function App() {
   const { t } = useTranslation()
   const location = useLocation()
-  const { preferences, setLanguage } = usePreferences()
+  const { preferences } = usePreferences()
+  const [settingsOpen, setSettingsOpen] = useState(false)
   useEffect(() => {
     document.documentElement.lang =
       preferences.language === 'pt' ? 'pt-BR' : 'en'
@@ -48,41 +50,34 @@ export function App() {
             className="size-16 select-none"
           />
         </Link>
-        <div className="relative shrink-0">
-          <label htmlFor="language" className="sr-only">
-            {t('app.language')}
-          </label>
-          <select
-            id="language"
-            value={preferences.language}
-            onChange={(event) => {
-              const language = event.target.value
-              if (language === 'pt' || language === 'en') setLanguage(language)
-            }}
-            className="min-h-10 cursor-pointer appearance-none rounded-sm bg-mocha py-2 pl-2 pr-6 text-xs text-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-          >
-            <option value="pt" lang="pt-BR">
-              Português
-            </option>
-            <option value="en" lang="en">
-              English
-            </option>
-          </select>
-          <Icon
-            name="chevron"
-            className="pointer-events-none absolute right-1 top-1/2 size-3 -translate-y-1/2 text-muted"
-          />
-        </div>
+        <button
+          type="button"
+          className="training-control training-toolbar-action shrink-0 text-xs text-muted"
+          aria-haspopup="dialog"
+          onClick={() => setSettingsOpen(true)}
+        >
+          <Icon name="sliders" className="size-4" />
+          {t('settings.settings')}
+        </button>
       </header>
       <TrainingProvider>
         <Routes>
-          <Route path="/" element={<SelectionPage />} />
+          <Route
+            path="/"
+            element={<SelectionPage settingsOpen={settingsOpen} />}
+          />
 
-          <Route path="/training" element={<TrainingPage />} />
+          <Route
+            path="/training"
+            element={<TrainingPage settingsOpen={settingsOpen} />}
+          />
           <Route path="/results" element={<Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </TrainingProvider>
+      {settingsOpen && (
+        <SettingsDialog onClose={() => setSettingsOpen(false)} />
+      )}
     </>
   )
 }

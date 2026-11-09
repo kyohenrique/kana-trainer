@@ -179,19 +179,59 @@
   outline: 2px solid var(--color-ink);
   outline-offset: 3px;
 }
+.training-page {
+  min-height: calc(100dvh - 80px);
+  display: flex;
+  flex-direction: column;
+  padding-block: 8px 32px;
+}
+.training-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--color-muted);
+  font-size: 12px;
+}
+.training-toolbar-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.training-toolbar-action:hover {
+  color: var(--color-ink);
+  background: #e9dfd308;
+}
+.training-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 260px;
+  padding-bottom: min(8dvh, 72px);
+}
 .training-window {
-  --kana-step: 5.7rem;
+  --kana-step: 7.5rem;
   position: relative;
   overflow: hidden;
-  height: clamp(190px, 28dvh, 260px);
-  margin-top: 1rem;
+  flex-shrink: 0;
+  height: 184px;
+  margin-bottom: 20px;
   mask-image: linear-gradient(
     to right,
     transparent,
-    black 8%,
-    black 92%,
+    black 12%,
+    black 88%,
     transparent
   );
+}
+.training-tagline {
+  margin-bottom: 12px;
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+  text-wrap: balance;
 }
 .training-track {
   position: absolute;
@@ -205,68 +245,110 @@
   margin-top: -3rem;
   text-align: center;
   font-family: var(--font-kana);
-  font-size: 2rem;
-  transition: transform 140ms ease-out;
+  font-size: 4.5rem;
+  line-height: 1;
+  color: var(--color-muted);
+  transition: transform 180ms ease-out;
   white-space: nowrap;
 }
-.kana-paper {
+.training-glyph {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: calc(var(--kana-step) - 0.8rem);
   height: 6rem;
-  margin-inline: auto;
-  color: #e2d3bd;
-  background-color: #3b3027;
-  background-image: repeating-linear-gradient(
-    2deg,
-    transparent 0 4px,
-    #e9dfd306 4px 5px
-  );
-  border: 1px solid #66513d;
-  border-radius: 2px 4px 3px 1px;
-  box-shadow:
-    inset 0 0 12px #211c1926,
-    0 3px 0 #171310;
+  transform: scale(0.7);
+  opacity: 0.7;
+  transition:
+    transform 180ms ease-out,
+    opacity 180ms ease-out,
+    color 180ms ease-out;
 }
-.training-kana.is-current .kana-paper {
-  background-color: #cdb693;
-  color: #30251d;
-  border-color: #e0c9a5;
-  box-shadow:
-    inset 0 0 14px #987a4c26,
-    0 3px 0 #171310;
+.training-kana[data-compound='true'] .training-glyph {
+  font-size: 0.72em;
+}
+.training-kana.is-current .training-glyph {
+  color: var(--color-ink);
+  opacity: 1;
+  transform: scale(1);
+}
+.training-kana.is-current::after {
+  content: '';
+  position: absolute;
+  bottom: -14px;
+  left: calc(50% - 9px);
+  width: 18px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--color-hiragana);
 }
 .training-kana.is-correct {
-  color: var(--color-muted);
-  opacity: 0.55;
+  opacity: 0.45;
 }
 .training-kana.is-wrong {
   color: var(--color-coral);
 }
-.training-kana.is-wrong .kana-paper {
-  color: var(--color-coral);
-  border-color: #9b605c;
+.training-kana.is-wrong .training-glyph {
+  opacity: 1;
 }
 .training-reading {
   position: absolute;
   left: 0;
   right: 0;
-  top: -1.5rem;
+  top: -14px;
   font: 14px var(--font-sans);
 }
 .training-mark {
-  display: block;
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  right: 0;
   font: 12px var(--font-sans);
-  margin-top: 12px;
 }
-@media (min-width: 640px) {
-  .training-window {
-    --kana-step: 7.8rem;
-  }
-  .training-kana {
-    font-size: 2.7rem;
-  }
+.training-answer {
+  width: min(100%, 380px);
+  margin-inline: auto;
+}
+.training-answer-field {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: #e9dfd306;
+  transition:
+    border-color 140ms ease-out,
+    background-color 140ms ease-out;
+}
+.training-answer-field[data-submit='true'] {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+}
+.training-answer-field[data-submit='true']::before {
+  content: '';
+}
+.training-answer-field:focus-within {
+  border-color: var(--color-hiragana);
+  background: #e9dfd30a;
+}
+.training-answer-field input::placeholder {
+  font-size: 14px;
+  color: var(--color-muted);
+}
+.training-submit {
+  display: grid;
+  place-items: center;
+  padding-inline: 0;
+  margin-right: 4px;
+}
+.training-submit:hover {
+  color: var(--color-ink);
+  background: #e9dfd308;
+}
+.training-hint {
+  margin-top: 12px;
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--color-muted);
 }
 .training-settings {
   width: min(28rem, calc(100vw - 2rem));
@@ -284,12 +366,23 @@
   background: #130f0bcc;
 }
 .training-page[data-keyboard='true'] {
-  padding-top: 0.5rem;
-  padding-bottom: calc(var(--training-keyboard-height, 172px) + 1rem);
+  padding-bottom: calc(var(--training-keyboard-height, 172px) + 12px);
+}
+.training-page[data-keyboard='true'] .training-stage {
+  justify-content: flex-end;
+  min-height: 240px;
+  padding-bottom: 12px;
 }
 .training-page[data-keyboard='true'] .training-window {
-  height: clamp(156px, 24dvh, 200px);
-  margin-top: 0;
+  --kana-step: 5.5rem;
+  height: 144px;
+  margin-bottom: 12px;
+}
+.training-page[data-keyboard='true'] .training-kana {
+  font-size: 3.5rem;
+}
+.training-page[data-keyboard='true'] .training-answer {
+  width: min(100%, 340px);
 }
 .touch-keyboard {
   position: fixed;
@@ -348,6 +441,20 @@
 .touch-key:disabled {
   opacity: 0.4;
 }
+@media (max-height: 650px) {
+  .training-page[data-keyboard='true'] .training-stage {
+    padding-bottom: 4px;
+  }
+  .training-page[data-keyboard='true'] .training-window {
+    margin-bottom: 4px;
+  }
+  .training-page[data-keyboard='true'] .training-answer input {
+    min-height: 48px;
+  }
+  .training-page[data-keyboard='true'] .training-hint {
+    margin-top: 8px;
+  }
+}
 /* Short landscape screens put practice beside the keyboard instead of under it. */
 @media (min-width: 560px) and (max-height: 500px) {
   :root:has(.training-page[data-keyboard='true']) header {
@@ -361,13 +468,16 @@
   .training-page[data-keyboard='true'] {
     width: 46%;
     margin-inline: 0;
+    min-height: calc(100dvh - 44px);
     padding: 0 12px 12px;
   }
-  .training-page[data-keyboard='true'] .training-window {
-    --kana-step: 5.7rem;
+  .training-page[data-keyboard='true'] .training-stage {
+    justify-content: center;
+    padding-bottom: 0;
   }
-  .training-page[data-keyboard='true'] .training-kana {
-    font-size: 2rem;
+  .training-page[data-keyboard='true'] .training-window {
+    --kana-step: 5rem;
+    height: 128px;
   }
   .training-page[data-keyboard='true'] input {
     font-size: 1rem;
@@ -382,7 +492,9 @@
   outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {
-  .training-kana {
+  .training-kana,
+  .training-glyph,
+  .training-answer-field {
     transition: none;
   }
 }

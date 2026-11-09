@@ -159,10 +159,22 @@ describe('kana selection', () => {
     const user = userEvent.setup()
     await renderApp()
     await user.click(screen.getByRole('button', { name: 'あ (a), Hiragana' }))
+    expect(
+      screen.queryByRole('combobox', { name: 'Idioma' }),
+    ).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Ajustes' }))
+    expect(screen.getByRole('dialog', { name: 'Ajustes' })).toBeVisible()
     await user.selectOptions(
       screen.getByRole('combobox', { name: 'Idioma' }),
       'en',
     )
+    expect(screen.getByRole('dialog', { name: 'Settings' })).toBeVisible()
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Voice' }),
+      'male',
+    )
+    await user.click(screen.getByRole('button', { name: 'Close settings' }))
+    expect(loadPreferences('pt', localStorage).voice).toBe('male')
     expect(
       await screen.findByRole('heading', { name: 'Choose your kana.' }),
     ).toBeVisible()
